@@ -4,277 +4,523 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今天和宝宝吃什么？</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh; display: flex; flex-direction: column;
-            align-items: center; padding: 20px; color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
         }
-        .container { max-width: 800px; width: 100%; text-align: center; }
-        h1 { margin: 20px 0; font-size: 2.5em; }
-        .emoji-bar { font-size: 1.8em; margin-bottom: 30px; letter-spacing: 10px; }
-        .content { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-bottom: 40px; }
-        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2.4em;
+            color: #2d3436;
+        }
+        .subtitle {
+            color: #636e72;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        .emoji-bar {
+            font-size: 2em;
+            margin: 20px 0 40px;
+            letter-spacing: 12px;
+        }
+
+        /* 轮盘主要区域布局 */
+        .main-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 50px;
+            margin-bottom: 40px;
+        }
+
         /* 轮盘容器 */
-        .wheel-section { flex: 0 0 auto; }
+        .wheel-box {
+            flex-shrink: 0;
+        }
         .wheel-container {
-            position: relative; width: 320px; height: 320px; margin: 0 auto;
+            position: relative;
+            width: 340px;
+            height: 340px;
+            margin: 0 auto 25px;
         }
-        .wheel {
-            width: 100%; height: 100%; border-radius: 50%; position: relative;
-            overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transition: transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            transform: rotate(0deg); background-color: #f0f0f0;
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            transition: transform 3s cubic-bezier(0.2, 0.8, 0.3, 1);
+            transform: rotate(0deg);
         }
-        
-        /* 扇区设计 - 使用CSS变量动态设置颜色 */
+
+        /* 扇形 - 颜色由JavaScript动态设置 */
         .sector {
-            position: absolute; width: 50%; height: 50%; left: 0; top: 0;
-            transform-origin: 100% 100%; background-color: var(--sector-color);
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            left: 0;
+            top: 0;
+            transform-origin: 100% 100%;
+            /* 白色分隔线 */
+            border-right: 2px solid rgba(255, 255, 255, 0.85);
+            box-sizing: border-box;
         }
-        .sector::after {
-            content: ''; position: absolute; width: 3px; height: 50%;
-            background-color: rgba(255, 255, 255, 0.9); top: 0; left: 50%;
-            transform: translateX(-50%); z-index: 10; box-shadow: 0 0 2px rgba(0,0,0,0.2);
-        }
-        
-        /* 14个扇区的颜色和位置 - 完全重新设计的对比色方案 */
-        .sector:nth-child(1)  { --sector-color: #FF5252; transform: rotate(0deg); }       /* 鲜艳红色 */
-        .sector:nth-child(2)  { --sector-color: #FF9800; transform: rotate(25.714deg); }   /* 鲜艳橙色 */
-        .sector:nth-child(3)  { --sector-color: #FFEB3B; transform: rotate(51.428deg); }   /* 亮黄色 */
-        .sector:nth-child(4)  { --sector-color: #4CAF50; transform: rotate(77.142deg); }   /* 绿色 */
-        .sector:nth-child(5)  { --sector-color: #00BCD4; transform: rotate(102.856deg); }  /* 青色 */
-        .sector:nth-child(6)  { --sector-color: #2196F3; transform: rotate(128.57deg); }   /* 蓝色 */
-        .sector:nth-child(7)  { --sector-color: #3F51B5; transform: rotate(154.284deg); }  /* 深蓝色 */
-        .sector:nth-child(8)  { --sector-color: #673AB7; transform: rotate(180deg); }      /* 紫色 */
-        .sector:nth-child(9)  { --sector-color: #9C27B0; transform: rotate(205.714deg); }  /* 紫红色 */
-        .sector:nth-child(10) { --sector-color: #E91E63; transform: rotate(231.428deg); }  /* 玫红色 */
-        .sector:nth-child(11) { --sector-color: #F44336; transform: rotate(257.142deg); }  /* 红橙色 */
-        .sector:nth-child(12) { --sector-color: #FF5722; transform: rotate(282.856deg); }  /* 深橙色 */
-        .sector:nth-child(13) { --sector-color: #795548; transform: rotate(308.57deg); }   /* 棕色 */
-        .sector:nth-child(14) { --sector-color: #607D8B; transform: rotate(334.284deg); }  /* 蓝灰色 */
-        
+
         /* 指针 */
         .pointer {
-            position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 12px solid transparent;
-            border-right: 12px solid transparent; border-top: 45px solid #222;
-            z-index: 20; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3));
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            border-top: 50px solid #2d3436;
+            z-index: 100;
+            filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.2));
         }
         .pointer::after {
-            content: ''; position: absolute; width: 14px; height: 14px;
-            background-color: #222; border-radius: 50%; top: 37px; left: -7px;
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #2d3436;
+            border-radius: 50%;
+            top: 42px;
+            left: -8px;
         }
-        
-        .controls { margin-top: 25px; }
+
+        /* 控制按钮 */
+        .controls {
+            margin-top: 10px;
+        }
         #spinButton {
-            background: linear-gradient(to right, #FF5252, #FF9800); color: white;
-            border: none; padding: 16px 45px; font-size: 1.3em; font-weight: bold;
-            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 15px rgba(255, 82, 82, 0.3);
-            transition: all 0.3s ease;
+            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        #spinButton:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 82, 82, 0.4); }
-        #spinButton:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
-        
-        .kiss-tip {
-            font-size: 1.1em; color: #FF5252; margin-top: 15px;
-            background: rgba(255, 255, 255, 0.9); padding: 10px 20px;
-            border-radius: 30px; display: inline-block; cursor: pointer;
+        #spinButton:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.5);
         }
-        
+        #spinButton:active {
+            transform: translateY(1px);
+        }
+        #spinButton:disabled {
+            background: #b2bec3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .kiss-hint {
+            margin-top: 15px;
+            color: #ff6b6b;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* 右侧选项面板 */
         .options-panel {
-            flex: 0 0 300px; background-color: white; border-radius: 20px;
-            padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: left;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            min-width: 320px;
+            max-width: 400px;
         }
-        .options-panel h2 {
-            text-align: center; margin-bottom: 20px; font-size: 1.6em;
-            border-bottom: 2px solid #FFC1CC; padding-bottom: 10px;
+        .panel-title {
+            font-size: 1.7em;
+            margin-bottom: 20px;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
-        .options-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .option-item {
-            display: flex; align-items: center; padding: 10px 12px;
-            border-radius: 10px; background-color: #f8f9fa; transition: transform 0.2s;
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
-        .option-item:hover {
-            transform: translateY(-2px); background-color: #fff;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        .option-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
         }
-        .color-box {
-            width: 20px; height: 20px; border-radius: 5px;
-            margin-right: 10px; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .option-card:hover {
+            transform: translateY(-3px);
+            background: white;
+            border-color: #dfe6e9;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
-        
-        .result {
-            background-color: white; border-radius: 20px; padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 600px; margin-top: 20px;
+        .color-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.7);
         }
-        .result h3 { margin-bottom: 15px; font-size: 1.5em; color: #666; }
-        #resultValue {
-            font-size: 2.2em; font-weight: bold; min-height: 60px;
-            display: flex; align-items: center; justify-content: center;
+        .option-name {
+            font-weight: 600;
+            flex-grow: 1;
         }
-        #resultValue span {
-            padding: 12px 28px; border-radius: 15px; color: white;
-            display: inline-block; animation: pulse 1.5s infinite;
+
+        /* 结果区域 */
+        .result-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); }
+        .result-title {
+            font-size: 1.5em;
+            color: #636e72;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
-        
-        @media (max-width: 768px) {
-            .content { flex-direction: column; align-items: center; }
-            .wheel-container { width: 280px; height: 280px; }
-            .options-panel { width: 100%; max-width: 400px; }
-            .options-list { grid-template-columns: 1fr; }
-            h1 { font-size: 2em; } #resultValue { font-size: 1.8em; }
+        #resultText {
+            font-size: 2.8em;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .result-chip {
+            padding: 18px 40px;
+            border-radius: 20px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            animation: gentlePulse 2s infinite;
+        }
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 850px) {
+            .main-area {
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+            }
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            .options-panel {
+                width: 100%;
+                max-width: 500px;
+            }
+            .options-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+            h1 {
+                font-size: 2em;
+            }
+            #resultText {
+                font-size: 2.2em;
+            }
+        }
+        @media (max-width: 480px) {
+            .wheel-container {
+                width: 260px;
+                height: 260px;
+            }
+            .pointer {
+                border-left-width: 12px;
+                border-right-width: 12px;
+                border-top-width: 40px;
+                top: -25px;
+            }
+            #spinButton {
+                padding: 15px 35px;
+                font-size: 1.2em;
+            }
+            .result-chip {
+                padding: 15px 25px;
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>今天和宝宝吃什么？</h1>
+        <p class="subtitle">让幸运之轮决定今天的美食吧！</p>
         <div class="emoji-bar">🍖 🥘 🍔 🐟 🍢 🍜 🍕 🍣 🍛 🥗</div>
 
-        <div class="content">
-            <div class="wheel-section">
+        <div class="main-area">
+            <!-- 左侧：轮盘 -->
+            <div class="wheel-box">
                 <div class="wheel-container">
                     <div class="pointer"></div>
-                    <div class="wheel" id="wheel">
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
-                        <div class="sector"></div><div class="sector"></div>
+                    <div id="wheel">
+                        <!-- 扇形将由JavaScript动态生成 -->
                     </div>
                 </div>
                 <div class="controls">
-                    <button id="spinButton">开始旋转 🎯</button>
-                    <div class="kiss-tip">😘 亲一口让轮盘开始转动 💋</div>
+                    <button id="spinButton">
+                        <span>开始旋转</span>
+                        <span>🎯</span>
+                    </button>
+                    <div class="kiss-hint">
+                        <span>😘</span>
+                        <span>亲一口让轮盘开始转动</span>
+                        <span>💋</span>
+                    </div>
                 </div>
             </div>
 
+            <!-- 右侧：选项 -->
             <div class="options-panel">
-                <h2>🍽️ 美味选项 🥢</h2>
-                <div class="options-list" id="optionsList"></div>
+                <div class="panel-title">
+                    <span>🍽️</span>
+                    <span>美味选项</span>
+                    <span>🥢</span>
+                </div>
+                <div class="options-grid" id="optionsGrid">
+                    <!-- 选项将由JavaScript动态生成 -->
+                </div>
             </div>
         </div>
 
-        <div class="result">
-            <h3><span>👧❤️</span> 今天和宝宝吃的是： <span>🍴</span></h3>
-            <div id="resultValue">等待选择...</div>
+        <!-- 结果区域 -->
+        <div class="result-box">
+            <div class="result-title">
+                <span>👧❤️</span>
+                <span>今天和宝宝吃的是：</span>
+                <span>🍴</span>
+            </div>
+            <div id="resultText">等待命运的选择...</div>
         </div>
     </div>
 
     <script>
-        // 优化后的选项配置 - 与CSS颜色完全对应
-        const options = [
-            { name: '烤肉', color: '#FF5252', emoji: '🍖' },
-            { name: '火锅', color: '#FF9800', emoji: '🥘' },
-            { name: '快餐', color: '#FFEB3B', emoji: '🍔' },
-            { name: '烤鱼', color: '#4CAF50', emoji: '🐟' },
-            { name: '烧烤', color: '#00BCD4', emoji: '🍢' },
-            { name: '小吃', color: '#2196F3', emoji: '🍡' },
-            { name: '铁锅炖', color: '#3F51B5', emoji: '🍲' },
-            { name: '麻辣烫', color: '#673AB7', emoji: '🌶️' },
-            { name: '西餐', color: '#9C27B0', emoji: '🍕' },
-            { name: '干锅', color: '#E91E63', emoji: '🥘' },
-            { name: '家常菜', color: '#F44336', emoji: '🍛' },
-            { name: '面类', color: '#FF5722', emoji: '🍜' },
-            { name: '啥也不吃', color: '#795548', emoji: '😴' },
-            { name: '宝宝自己定', color: '#607D8B', emoji: '👧' }
+        // ==================== 配置区域 ====================
+        const FOOD_OPTIONS = [
+            { name: '烤肉', emoji: '🍖' },
+            { name: '火锅', emoji: '🥘' },
+            { name: '快餐', emoji: '🍔' },
+            { name: '烤鱼', emoji: '🐟' },
+            { name: '烧烤', emoji: '🍢' },
+            { name: '小吃', emoji: '🍡' },
+            { name: '铁锅炖', emoji: '🍲' },
+            { name: '麻辣烫', emoji: '🌶️' },
+            { name: '西餐', emoji: '🍕' },
+            { name: '干锅', emoji: '🥘' },
+            { name: '家常菜', emoji: '🍛' },
+            { name: '面类', emoji: '🍜' },
+            { name: '啥也不吃', emoji: '😴' },
+            { name: '宝宝自己定', emoji: '👧' }
         ];
 
-        // 修复问题2的关键：使用简单可靠的旋转逻辑
+        // ==================== 核心功能 ====================
         let isSpinning = false;
-        
-        // 初始化选项列表
-        function initOptionsList() {
-            const list = $('#optionsList');
-            list.empty();
-            options.forEach(opt => {
-                list.append(`
-                    <div class="option-item">
-                        <div class="color-box" style="background-color:${opt.color};"></div>
-                        <span>${opt.name}</span>
-                        <span style="margin-left:auto;">${opt.emoji}</span>
-                    </div>
-                `);
+
+        // 1. 生成高区分度的颜色 (使用HSL模型，在色环上等间距)
+        function generateDistinctColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                // 色相均匀分布，饱和度和亮度固定为鲜艳值
+                const hue = Math.round((i * 360) / count); // 等间距色相
+                const saturation = 70 + Math.random() * 25; // 70-95%
+                const lightness = 50 + Math.random() * 15;  // 50-65%
+                colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+            }
+            // 轻微打乱顺序，避免相近色相相邻
+            return colors.sort(() => Math.random() - 0.5);
+        }
+
+        // 2. 创建轮盘扇区
+        function createWheelSectors() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '';
+            const sectorColors = generateDistinctColors(FOOD_OPTIONS.length);
+            const angleStep = 360 / FOOD_OPTIONS.length;
+            
+            // 为每个选项创建扇区
+            FOOD_OPTIONS.forEach((option, index) => {
+                const sector = document.createElement('div');
+                sector.className = 'sector';
+                sector.style.backgroundColor = sectorColors[index];
+                sector.style.transform = `rotate(${index * angleStep}deg)`;
+                wheel.appendChild(sector);
+                
+                // 存储颜色到选项对象中
+                option.color = sectorColors[index];
+            });
+            
+            console.log('扇区颜色已生成:', sectorColors);
+        }
+
+        // 3. 创建选项列表
+        function createOptionsList() {
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            
+            FOOD_OPTIONS.forEach((option, index) => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `
+                    <div class="color-dot" style="background-color: ${option.color};"></div>
+                    <div class="option-name">${option.name}</div>
+                    <div>${option.emoji}</div>
+                `;
+                grid.appendChild(card);
             });
         }
 
-        // 修复问题2的核心：重新设计的旋转函数
-        function startSpin() {
+        // 4. 旋转轮盘 (修复了重复旋转问题)
+        function spinWheel() {
             if (isSpinning) return;
             
             isSpinning = true;
-            const spinBtn = $('#spinButton');
-            const wheel = $('#wheel');
-            const result = $('#resultValue');
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spinButton');
+            const resultText = document.getElementById('resultText');
             
-            spinBtn.prop('disabled', true).text('旋转中... 🌀');
-            result.html('<span style="background:#666;color:white;">旋转中...</span>');
+            // 禁用按钮并更新状态
+            spinBtn.disabled = true;
+            spinBtn.innerHTML = '<span>旋转中...</span><span>🌀</span>';
+            resultText.innerHTML = '<span style="color:#666;">轮盘转动中...</span>';
             
-            // 随机选择
-            const selectedIndex = Math.floor(Math.random() * options.length);
-            const selectedOption = options[selectedIndex];
+            // 随机选择目标
+            const randomIndex = Math.floor(Math.random() * FOOD_OPTIONS.length);
+            const selectedOption = FOOD_OPTIONS[randomIndex];
             
-            // 关键修复：每次旋转都从当前角度开始，增加多圈旋转
-            const currentRotation = parseInt(wheel.css('transform').split(',')[3]) || 0;
-            const anglePerOption = 360 / options.length;
+            // 关键修复：计算旋转角度
+            // 1. 总是从当前视觉角度开始（读取transform值）
+            const currentRotation = getCurrentRotation(wheel);
+            // 2. 至少转4整圈 (1440度)
+            const fullCircles = 1440;
+            // 3. 加上随机偏移，确保停在目标扇区中间
+            const anglePerSector = 360 / FOOD_OPTIONS.length;
+            const targetOffset = randomIndex * anglePerSector + (anglePerSector / 2);
+            // 4. 总旋转角度
+            const totalRotation = currentRotation + fullCircles + (360 - targetOffset);
             
-            // 计算目标位置（选中扇区的中心）
-            const targetCenter = selectedIndex * anglePerOption + anglePerOption / 2;
-            
-            // 计算最终旋转角度：当前角度 + 4圈 + (360° - 目标角度)
-            // 这样确保指针停在目标扇区中心
-            const totalRotation = currentRotation + 1440 + (360 - (targetCenter % 360));
+            console.log(`选中: ${selectedOption.name}, 旋转至: ${totalRotation}度`);
             
             // 应用旋转
-            wheel.css('transform', `rotate(${totalRotation}deg)`);
+            wheel.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.3, 1)';
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
             
             // 3秒后显示结果
             setTimeout(() => {
-                let resultText = selectedOption.name;
-                let resultEmoji = selectedOption.emoji;
+                let displayName = selectedOption.name;
+                let displayEmoji = selectedOption.emoji;
                 
-                if (resultText === '宝宝自己定') {
-                    resultText = '宝宝决定吃什么';
-                    resultEmoji = '👧';
+                if (displayName === '宝宝自己定') {
+                    displayName = '宝宝决定吃什么';
+                    displayEmoji = '👧';
                 }
                 
-                result.html(`<span style="background-color:${selectedOption.color};">${resultEmoji} ${resultText}</span>`);
+                resultText.innerHTML = `
+                    <div class="result-chip" style="background-color: ${selectedOption.color};">
+                        <span>${displayEmoji}</span>
+                        <span>${displayName}</span>
+                    </div>
+                `;
+                
+                // 重置状态
                 isSpinning = false;
-                spinBtn.prop('disabled', false).text('开始旋转 🎯');
+                spinBtn.disabled = false;
+                spinBtn.innerHTML = '<span>开始旋转</span><span>🎯</span>';
             }, 3000);
         }
 
-        // 事件绑定
-        $(document).ready(function() {
-            initOptionsList();
+        // 辅助函数：获取当前旋转角度
+        function getCurrentRotation(element) {
+            const transform = window.getComputedStyle(element).transform;
+            if (transform === 'none') return 0;
             
-            // 按钮点击
-            $('#spinButton').on('click', startSpin);
+            const values = transform.split('(')[1].split(')')[0].split(',');
+            const a = parseFloat(values[0]);
+            const b = parseFloat(values[1]);
+            const angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
+            return angle < 0 ? angle + 360 : angle;
+        }
+
+        // ==================== 初始化与事件绑定 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化轮盘和选项
+            createWheelSectors();
+            createOptionsList();
             
-            // 触摸设备支持
-            $('#spinButton').on('touchstart', function(e) {
+            // 绑定旋转按钮事件
+            const spinBtn = document.getElementById('spinButton');
+            spinBtn.addEventListener('click', spinWheel);
+            spinBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (!isSpinning) startSpin();
+                if (!isSpinning) spinWheel();
             });
             
-            // 点击提示文字
-            $('.kiss-tip').on('click', function() {
-                if (!isSpinning) startSpin();
+            // 绑定提示文本点击事件
+            const kissHint = document.querySelector('.kiss-hint');
+            kissHint.addEventListener('click', () => {
+                if (!isSpinning) spinWheel();
             });
             
-            // 点击轮盘
-            $('#wheel').on('click', function() {
-                if (!isSpinning) startSpin();
+            // 绑定轮盘点击事件
+            const wheel = document.getElementById('wheel');
+            wheel.addEventListener('click', () => {
+                if (!isSpinning) spinWheel();
             });
+            
+            console.log('美食轮盘初始化完成！');
         });
     </script>
 </body>
