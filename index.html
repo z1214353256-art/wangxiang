@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天和宝宝吃什么？</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .title-section {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            display: inline-block;
+            position: relative;
+        }
+        
+        .emoji-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        .emoji {
+            font-size: 2.2em;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .emoji:nth-child(2n) {
+            animation-delay: 0.5s;
+        }
+        
+        .emoji:nth-child(3n) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .main-content {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            align-items: stretch;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .center-section {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            margin-bottom: 30px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* 先加速后减速效果 */
+            transform: rotate(0deg);
+            
+            /* 14个选项的锥形渐变 - 完美等分 */
+            background: conic-gradient(
+                #FF6B6B 0deg 25.714deg,
+                #4ECDC4 25.714deg 51.428deg,
+                #FFD166 51.428deg 77.142deg,
+                #06D6A0 77.142deg 102.856deg,
+                #118AB2 102.856deg 128.57deg,
+                #EF476F 128.57deg 154.284deg,
+                #8AC926 154.284deg 180deg,
+                #1982C4 180deg 205.714deg,
+                #6A4C93 205.714deg 231.428deg,
+                #FF9F1C 231.428deg 257.142deg,
+                #2A9D8F 257.142deg 282.856deg,
+                #E63946 282.856deg 308.57deg,
+                #7209B7 308.57deg 334.284deg,
+                #5A189A 334.284deg 360deg
+            );
+        }
+        
+        /* 确保颜色从中心开始，完全填充整个圆 */
+        .wheel:before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            z-index: 1;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 60px;
+            z-index: 50;
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+        }
+        
+        .pointer:before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 45px solid #333;
+            top: 0;
+            left: 0;
+        }
+        
+        .pointer:after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background-color: #333;
+            border-radius: 50%;
+            top: 40px;
+            left: 8px;
+        }
+        
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .spin-button {
+            background: linear-gradient(to right, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .spin-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .spin-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .button-emoji {
+            font-size: 1.3em;
+            margin-left: 10px;
+        }
+        
+        .kiss-indicator {
+            font-size: 1.3em;
+            color: #FF6B6B;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 25px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #FFC1CC;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .kiss-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.2);
+        }
+        
+        .kiss-emoji {
+            font-size: 1.8em;
+            animation: kissAnimation 2s infinite;
+        }
+        
+        @keyframes kissAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .right-section {
+            flex: 0 0 300px;
+            background-color: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+        
+        .options-title {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 3px solid #FFC1CC;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .options-title-emoji {
+            font-size: 1.5em;
+        }
+        
+        .options-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            flex-grow: 1;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background-color: rgba(245, 247, 250, 0.7);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .option-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            background-color: white;
+            border-color: rgba(0,0,0,0.05);
+        }
+        
+        .option-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .option-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            flex-grow: 1;
+        }
+        
+        .option-emoji {
+            font-size: 1.2em;
+            margin-left: 5px;
+            opacity: 0.8;
+        }
+        
+        .result {
+            margin-top: 40px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-title {
+            color: #666;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .result-title-emoji {
+            font-size: 1.5em;
+        }
+        
+        .result-value {
+            color: #333;
+            font-size: 2.8em;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .result-value span {
+            padding: 15px 35px;
+            border-radius: 15px;
+            animation: pulse 1.5s infinite;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .result-emoji {
+            position: absolute;
+            font-size: 4em;
+            opacity: 0.15;
+            z-index: 1;
+            animation: floatResult 6s ease-in-out infinite;
+        }
+        
+        .result-emoji:nth-child(1) {
+            top: 20px;
+            left: 30px;
+        }
+        
+        .result-emoji:nth-child(2) {
+            bottom: 20px;
+            right: 30px;
+            animation-delay: 2s;
+        }
+        
+        .result-emoji:nth-child(3) {
+            top: 40px;
+            right: 60px;
+            animation-delay: 4s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes floatResult {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-15px) rotate(10deg); }
+            66% { transform: translateY(10px) rotate(-10deg); }
+        }
+        
+        .separator {
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            left: 50%;
+            top: 0;
+            transform-origin: 50% 100%;
+            z-index: 2;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .center-section, .right-section {
+                flex: 1 1 auto;
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .right-section {
+                margin-top: 30px;
+                min-height: auto;
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .spin-button {
+                padding: 15px 40px;
+                font-size: 1.3em;
+            }
+            
+            .kiss-indicator {
+                font-size: 1.1em;
+                padding: 10px 20px;
+            }
+            
+            .options-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-value {
+                font-size: 2.2em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .wheel-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .result-value {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-section">
+            <h1>今天和宝宝吃什么？</h1>
+            <div class="emoji-container">
+                <div class="emoji">🍖</div>
+                <div class="emoji">🥘</div>
+                <div class="emoji">🍔</div>
+                <div class="emoji">🐟</div>
+                <div class="emoji">🍢</div>
+                <div class="emoji">🍜</div>
+                <div class="emoji">🥗</div>
+                <div class="emoji">🍕</div>
+                <div class="emoji">🍣</div>
+                <div class="emoji">🍛</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- 中间：轮盘 -->
+            <div class="center-section">
+                <div class="wheel-container">
+                    <div class="pointer"></div>
+                    <div class="wheel" id="wheel">
+                        <!-- 分隔线将用JavaScript动态生成 -->
+                        <div class="wheel-text-container" id="separatorsContainer"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="spin-button" id="spinButton">
+                        开始旋转<span class="button-emoji">🎯</span>
+                    </button>
+                    <div class="kiss-indicator">
+                        <span class="kiss-emoji">😘</span>
+                        亲一口让轮盘开始转动
+                        <span class="kiss-emoji">💋</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右边：选项列表 -->
+            <div class="right-section">
+                <h2 class="options-title">
+                    <span class="options-title-emoji">🍽️</span>
+                    美味选项
+                    <span class="options-title-emoji">🥢</span>
+                </h2>
+                <div class="options-list" id="optionsList">
+                    <!-- 选项将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 结果区域 -->
+        <div class="result">
+            <div class="result-emoji">🍕</div>
+            <div class="result-emoji">🍜</div>
+            <div class="result-emoji">🍖</div>
+            <div class="result-title">
+                <span class="result-title-emoji">👧❤️</span>
+                今天和宝宝吃的是：
+                <span class="result-title-emoji">🍴</span>
+            </div>
+            <div class="result-value" id="resultValue">等待选择...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wheel = document.getElementById('wheel');
+            const separatorsContainer = document.getElementById('separatorsContainer');
+            const spinButton = document.getElementById('spinButton');
+            const resultValue = document.getElementById('resultValue');
+            const optionsList = document.getElementById('optionsList');
+            const kissIndicator = document.querySelector('.kiss-indicator');
+            
+            // 14个选项，每个选项的颜色和对应的emoji
+            const options = [
+                { name: '烤肉', color: '#FF6B6B', emoji: '🍖' },
+                { name: '火锅', color: '#4ECDC4', emoji: '🥘' },
+                { name: '快餐', color: '#FFD166', emoji: '🍔' },
+                { name: '烤鱼', color: '#06D6A0', emoji: '🐟' },
+                { name: '烧烤', color: '#118AB2', emoji: '🍢' },
+                { name: '小吃', color: '#EF476F', emoji: '🍡' },
+                { name: '铁锅炖', color: '#8AC926', emoji: '🍲' },
+                { name: '麻辣烫', color: '#1982C4', emoji: '🌶️' },
+                { name: '西餐', color: '#6A4C93', emoji: '🍕' },
+                { name: '干锅', color: '#FF9F1C', emoji: '🥘' },
+                { name: '家常菜', color: '#2A9D8F', emoji: '🍛' },
+                { name: '面类', color: '#E63946', emoji: '🍜' },
+                { name: '啥也不吃', color: '#7209B7', emoji: '😴' },
+                { name: '宝宝自己定', color: '#5A189A', emoji: '👧' }
+            ];
+            
+            let isSpinning = false;
+            let currentRotation = 0;
+            
+            // 生成分隔线
+            function createSeparators() {
+                separatorsContainer.innerHTML = '';
+                const angleStep = 360 / options.length;
+                
+                for (let i = 0; i < options.length; i++) {
+                    const separator = document.createElement('div');
+                    separator.className = 'separator';
+                    separator.style.transform = `rotate(${i * angleStep}deg)`;
+                    separatorsContainer.appendChild(separator);
+                }
+            }
+            
+            // 生成右侧选项列表
+            function createOptionsList() {
+                optionsList.innerHTML = '';
+                
+                options.forEach(option => {
+                    const optionItem = document.createElement('div');
+                    optionItem.className = 'option-item';
+                    
+                    optionItem.innerHTML = `
+                        <div class="option-color" style="background-color: ${option.color};"></div>
+                        <div class="option-name">${option.name}</div>
+                        <div class="option-emoji">${option.emoji}</div>
+                    `;
+                    
+                    optionsList.appendChild(optionItem);
+                });
+            }
+            
+            // 计算对比色，确保文字在背景上清晰可见
+            function getContrastColor(hexColor) {
+                // 将十六进制颜色转换为RGB
+                const r = parseInt(hexColor.substr(1, 2), 16);
+                const g = parseInt(hexColor.substr(3, 2), 16);
+                const b = parseInt(hexColor.substr(5, 2), 16);
+                
+                // 计算相对亮度
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                return brightness > 128 ? '#333' : 'white';
+            }
+            
+            // 开始旋转
+            function startSpin() {
+                if (isSpinning) return;
+                
+                isSpinning = true;
+                spinButton.disabled = true;
+                spinButton.innerHTML = '旋转中...<span class="button-emoji">🌀</span>';
+                resultValue.innerHTML = '<span style="color: #666;">旋转中...</span>';
+                
+                // 随机选择一个选项（每个选项概率相等）
+                const selectedIndex = Math.floor(Math.random() * options.length);
+                const selectedOption = options[selectedIndex];
+                
+                // 每个选项对应的角度（360度被14等分）
+                const anglePerOption = 360 / options.length;
+                // 计算目标角度，使指针停在选中选项的中间位置
+                const targetAngle = selectedIndex * anglePerOption + anglePerOption / 2;
+                
+                // 计算停止的角度：当前角度 + 多转几圈（1440度 = 4圈） + 目标角度
+                const extraSpins = 1440; // 额外旋转4圈
+                const stopAngle = currentRotation + extraSpins + (360 - targetAngle % 360);
+                
+                // 应用旋转动画
+                wheel.style.transform = `rotate(${stopAngle}deg)`;
+                currentRotation = stopAngle % 360;
+                
+                // 3秒后停止并显示结果
+                setTimeout(() => {
+                    // 显示结果
+                    let resultText = selectedOption.name;
+                    let resultEmoji = selectedOption.emoji;
+                    
+                    if (resultText === '宝宝自己定') {
+                        resultText = '宝宝决定吃什么';
+                        resultEmoji = '👧';
+                    }
+                    
+                    resultValue.innerHTML = `<span style="background-color: ${selectedOption.color}; color: ${getContrastColor(selectedOption.color)}; padding: 15px 30px; border-radius: 15px;">${resultEmoji} ${resultText}</span>`;
+                    
+                    // 重置按钮状态
+                    isSpinning = false;
+                    spinButton.disabled = false;
+                    spinButton.innerHTML = '开始旋转<span class="button-emoji">🎯</span>';
+                }, 3000);
+            }
+            
+            // 按钮点击事件
+            spinButton.addEventListener('click', startSpin);
+            
+            // 添加触摸事件支持，确保在iOS设备上正常工作
+            spinButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (!isSpinning) {
+                    startSpin();
+                }
+            }, { passive: false });
+            
+            // 亲亲提示区域点击事件
+            kissIndicator.addEventListener('click', function() {
+                if (!isSpinning) {
+                    startSpin();
+                }
+            });
+            
+            // 添加点击轮盘开始旋转
+            wheel.addEventListener('click', function(e) {
+                if (!isSpinning) {
+                    startSpin();
+                }
+            });
+            
+            // 初始化
+            createSeparators();
+            createOptionsList();
+        });
+    </script>
+</body>
+</html>
