@@ -52,7 +52,7 @@
             height: 320px;
             margin: 0 auto;
         }
-        /* 轮盘主体 - 使用绝对定位的div构建扇形，替代 conic-gradient */
+        /* 轮盘主体 */
         .wheel {
             width: 100%;
             height: 100%;
@@ -62,9 +62,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             transition: transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             transform: rotate(0deg);
-            background-color: #f0f0f0; /* 备用背景色 */
+            background-color: #f0f0f0;
         }
-        /* 14个扇区，通过绝对定位和旋转实现 */
+        /* 14个扇区 - 高对比度颜色 */
         .sector {
             position: absolute;
             width: 50%;
@@ -73,22 +73,35 @@
             top: 0;
             transform-origin: 100% 100%;
         }
-        /* 为每个扇区定义颜色和位置 (360/14 ≈ 25.714度) */
-       .sector:nth-child(1)  { background-color: #FF6B6B; transform: rotate(0deg); }        /* 鲜红色 */
-.sector:nth-child(2)  { background-color: #FFA726; transform: rotate(25.714deg); }   /* 亮橙色 */
-.sector:nth-child(3)  { background-color: #FFEE58; transform: rotate(51.428deg); }   /* 明黄色 */
-.sector:nth-child(4)  { background-color: #9CCC65; transform: rotate(77.142deg); }   /* 黄绿色 */
-.sector:nth-child(5)  { background-color: #26A69A; transform: rotate(102.856deg); }  /* 青绿色 */
-.sector:nth-child(6)  { background-color: #4FC3F7; transform: rotate(128.57deg); }   /* 亮蓝色 */
-.sector:nth-child(7)  { background-color: #42A5F5; transform: rotate(154.284deg); }  /* 蓝色 */
-.sector:nth-child(8)  { background-color: #5C6BC0; transform: rotate(180deg); }      /* 蓝紫色 */
-.sector:nth-child(9)  { background-color: #7E57C2; transform: rotate(205.714deg); }  /* 紫色 */
-.sector:nth-child(10) { background-color: #AB47BC; transform: rotate(231.428deg); }  /* 紫红色 */
-.sector:nth-child(11) { background-color: #EC407A; transform: rotate(257.142deg); }  /* 玫红色 */
-.sector:nth-child(12) { background-color: #EF5350; transform: rotate(282.856deg); }  /* 红橙色 */
-.sector:nth-child(13) { background-color: #78909C; transform: rotate(308.57deg); }   /* 蓝灰色 */
-.sector:nth-child(14) { background-color: #8D6E63; transform: rotate(334.284deg); }  /* 棕褐色 */
-        
+        /* 白色分隔线 - 清晰划分区域 */
+        .sector::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        /* 扇形颜色定义 (360/14 ≈ 25.714度) */
+        .sector:nth-child(1)  { background-color: #FF6B6B; transform: rotate(0deg); }
+        .sector:nth-child(2)  { background-color: #FFA726; transform: rotate(25.714deg); }
+        .sector:nth-child(3)  { background-color: #FFEE58; transform: rotate(51.428deg); }
+        .sector:nth-child(4)  { background-color: #9CCC65; transform: rotate(77.142deg); }
+        .sector:nth-child(5)  { background-color: #26A69A; transform: rotate(102.856deg); }
+        .sector:nth-child(6)  { background-color: #4FC3F7; transform: rotate(128.57deg); }
+        .sector:nth-child(7)  { background-color: #42A5F5; transform: rotate(154.284deg); }
+        .sector:nth-child(8)  { background-color: #5C6BC0; transform: rotate(180deg); }
+        .sector:nth-child(9)  { background-color: #7E57C2; transform: rotate(205.714deg); }
+        .sector:nth-child(10) { background-color: #AB47BC; transform: rotate(231.428deg); }
+        .sector:nth-child(11) { background-color: #EC407A; transform: rotate(257.142deg); }
+        .sector:nth-child(12) { background-color: #EF5350; transform: rotate(282.856deg); }
+        .sector:nth-child(13) { background-color: #78909C; transform: rotate(308.57deg); }
+        .sector:nth-child(14) { background-color: #8D6E63; transform: rotate(334.284deg); }
+
+        /* 精准的细指针 */
         .pointer {
             position: absolute;
             top: -25px;
@@ -96,8 +109,8 @@
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
             border-top: 40px solid #333;
             z-index: 20;
             filter: drop-shadow(0 3px 2px rgba(0,0,0,0.2));
@@ -145,6 +158,7 @@
             padding: 10px 20px;
             border-radius: 30px;
             display: inline-block;
+            cursor: pointer;
         }
         .options-panel {
             flex: 0 0 300px;
@@ -172,6 +186,12 @@
             padding: 10px 12px;
             border-radius: 10px;
             background-color: #f8f9fa;
+            transition: transform 0.2s;
+        }
+        .option-item:hover {
+            transform: translateY(-2px);
+            background-color: #fff;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
         .color-box {
             width: 20px;
@@ -179,6 +199,7 @@
             border-radius: 5px;
             margin-right: 10px;
             flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .result {
             background-color: white;
@@ -207,6 +228,12 @@
             border-radius: 15px;
             color: white;
             display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         @media (max-width: 768px) {
             .content {
@@ -224,6 +251,12 @@
             .options-list {
                 grid-template-columns: 1fr;
             }
+            h1 {
+                font-size: 2em;
+            }
+            #resultValue {
+                font-size: 1.8em;
+            }
         }
     </style>
 </head>
@@ -238,7 +271,7 @@
                 <div class="wheel-container">
                     <div class="pointer"></div>
                     <div class="wheel" id="wheel">
-                        <!-- 14个扇区由CSS生成 -->
+                        <!-- 14个扇区 -->
                         <div class="sector"></div><div class="sector"></div>
                         <div class="sector"></div><div class="sector"></div>
                         <div class="sector"></div><div class="sector"></div>
@@ -271,22 +304,22 @@
     </div>
 
     <script>
-        // 定义14个选项
+        // 定义14个选项 - 高对比度颜色
         const options = [
             { name: '烤肉', color: '#FF6B6B', emoji: '🍖' },
-            { name: '火锅', color: '#4ECDC4', emoji: '🥘' },
-            { name: '快餐', color: '#FFD166', emoji: '🍔' },
-            { name: '烤鱼', color: '#06D6A0', emoji: '🐟' },
-            { name: '烧烤', color: '#118AB2', emoji: '🍢' },
-            { name: '小吃', color: '#EF476F', emoji: '🍡' },
-            { name: '铁锅炖', color: '#8AC926', emoji: '🍲' },
-            { name: '麻辣烫', color: '#1982C4', emoji: '🌶️' },
-            { name: '西餐', color: '#6A4C93', emoji: '🍕' },
-            { name: '干锅', color: '#FF9F1C', emoji: '🥘' },
-            { name: '家常菜', color: '#2A9D8F', emoji: '🍛' },
-            { name: '面类', color: '#E63946', emoji: '🍜' },
-            { name: '啥也不吃', color: '#7209B7', emoji: '😴' },
-            { name: '宝宝自己定', color: '#5A189A', emoji: '👧' }
+            { name: '火锅', color: '#FFA726', emoji: '🥘' },
+            { name: '快餐', color: '#FFEE58', emoji: '🍔' },
+            { name: '烤鱼', color: '#9CCC65', emoji: '🐟' },
+            { name: '烧烤', color: '#26A69A', emoji: '🍢' },
+            { name: '小吃', color: '#4FC3F7', emoji: '🍡' },
+            { name: '铁锅炖', color: '#42A5F5', emoji: '🍲' },
+            { name: '麻辣烫', color: '#5C6BC0', emoji: '🌶️' },
+            { name: '西餐', color: '#7E57C2', emoji: '🍕' },
+            { name: '干锅', color: '#AB47BC', emoji: '🥘' },
+            { name: '家常菜', color: '#EC407A', emoji: '🍛' },
+            { name: '面类', color: '#EF5350', emoji: '🍜' },
+            { name: '啥也不吃', color: '#78909C', emoji: '😴' },
+            { name: '宝宝自己定', color: '#8D6E63', emoji: '👧' }
         ];
 
         let isSpinning = false;
@@ -307,38 +340,52 @@
             });
         }
 
-        // 开始旋转
+        // 开始旋转 - 优化停止精度
         function startSpin() {
             if (isSpinning) return;
 
             isSpinning = true;
             $('#spinButton').prop('disabled', true).text('旋转中... 🌀');
-            $('#resultValue').html('<span style="background:#666;">旋转中...</span>');
+            $('#resultValue').html('<span style="background:#666;color:white;">旋转中...</span>');
 
-            // 随机选择
+            // 随机选择一个选项
             const selectedIndex = Math.floor(Math.random() * options.length);
             const selectedOption = options[selectedIndex];
 
-            // 计算旋转角度 (先加速后减速，共约4圈 + 目标位置)
-            const anglePerOption = 360 / options.length;
-            const targetAngle = selectedIndex * anglePerOption + anglePerOption / 2;
+            // *** 精确计算停止角度 ***
+            const anglePerOption = 360 / options.length; // 每个扇形的角度
+            
+            // 计算选中扇形的中心角度
+            const minAngle = selectedIndex * anglePerOption;
+            const maxAngle = (selectedIndex + 1) * anglePerOption;
+            const targetCenterAngle = (minAngle + maxAngle) / 2;
+            
+            // 计算最终停止角度：当前角度 + 4圈 + 调整到扇形中心
             const extraSpins = 1440; // 4圈
-            const stopAngle = currentRotation + extraSpins + (360 - targetAngle % 360);
+            const stopAngle = currentRotation + extraSpins + (360 - targetCenterAngle % 360) - (anglePerOption / 2);
 
-            // 应用旋转
-            $('#wheel').css('transform', `rotate(${stopAngle}deg)`);
+            // 应用旋转（先加速后减速效果）
+            $('#wheel').css({
+                'transform': `rotate(${stopAngle}deg)`,
+                'transition': 'transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55)'
+            });
+            
             currentRotation = stopAngle % 360;
 
-            // 3秒后停止
+            // 3秒后停止并显示结果
             setTimeout(() => {
                 let resultText = selectedOption.name;
                 let resultEmoji = selectedOption.emoji;
+                
                 if (resultText === '宝宝自己定') {
                     resultText = '宝宝决定吃什么';
                     resultEmoji = '👧';
                 }
 
+                // 显示结果，使用选中扇形的颜色
                 $('#resultValue').html(`<span style="background-color:${selectedOption.color};">${resultEmoji} ${resultText}</span>`);
+                
+                // 重置按钮状态
                 isSpinning = false;
                 $('#spinButton').prop('disabled', false).text('开始旋转 🎯');
             }, 3000);
@@ -348,24 +395,32 @@
         $(document).ready(function() {
             initOptionsList();
 
+            // 按钮点击
             $('#spinButton').on('click', startSpin);
-            // 支持触摸设备
+            
+            // 触摸设备支持
             $('#spinButton').on('touchstart', function(e) {
                 e.preventDefault();
                 if (!isSpinning) startSpin();
             });
 
-            // 点击提示文字也可以开始
+            // 点击提示文字开始
             $('.kiss-tip').on('click', function() {
                 if (!isSpinning) startSpin();
             });
 
-            // 点击轮盘也可以开始
+            // 点击轮盘开始
             $('#wheel').on('click', function() {
                 if (!isSpinning) startSpin();
+            });
+
+            // 为选项列表项添加点击事件（可选功能：点击直接选择）
+            $('#optionsList').on('click', '.option-item', function() {
+                if (isSpinning) return;
+                const index = $(this).index();
+                // 这里可以添加直接选择该选项的逻辑（如果需要）
             });
         });
     </script>
 </body>
 </html>
-
