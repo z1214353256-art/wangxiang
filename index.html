@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -43,7 +43,7 @@
             letter-spacing: 12px;
         }
 
-        /* 轮盘主要区域布局 */
+        /* 主内容区域 */
         .main-area {
             display: flex;
             flex-wrap: wrap;
@@ -53,16 +53,17 @@
             margin-bottom: 40px;
         }
 
-        /* 轮盘容器 */
+        /* 轮盘区域 */
         .wheel-box {
             flex-shrink: 0;
         }
         .wheel-container {
             position: relative;
-            width: 340px;
-            height: 340px;
+            width: 360px;
+            height: 360px;
             margin: 0 auto 25px;
         }
+        /* 轮盘主体 - 使用CSS变量动态设置锥形渐变 */
         #wheel {
             width: 100%;
             height: 100%;
@@ -72,47 +73,46 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
             transition: transform 3s cubic-bezier(0.2, 0.8, 0.3, 1);
             transform: rotate(0deg);
+            /* 背景将由JavaScript动态设置 */
         }
-
-        /* 扇形 - 颜色由JavaScript动态设置 */
-        .sector {
+        /* 扇形分隔线 */
+        .sector-divider {
             position: absolute;
-            width: 50%;
+            width: 2px;
             height: 50%;
-            left: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            left: 50%;
             top: 0;
-            transform-origin: 100% 100%;
-            /* 白色分隔线 */
-            border-right: 2px solid rgba(255, 255, 255, 0.85);
-            box-sizing: border-box;
+            transform-origin: 50% 100%;
+            z-index: 5;
         }
 
         /* 指针 */
         .pointer {
             position: absolute;
-            top: -30px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 16px solid transparent;
-            border-right: 16px solid transparent;
-            border-top: 50px solid #2d3436;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 60px solid #2d3436;
             z-index: 100;
             filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.2));
         }
         .pointer::after {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             background-color: #2d3436;
             border-radius: 50%;
-            top: 42px;
-            left: -8px;
+            top: 52px;
+            left: -10px;
         }
 
-        /* 控制按钮 */
+        /* 控制区域 */
         .controls {
             margin-top: 10px;
         }
@@ -153,6 +153,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            cursor: pointer;
         }
 
         /* 右侧选项面板 */
@@ -257,8 +258,14 @@
                 gap: 40px;
             }
             .wheel-container {
-                width: 300px;
-                height: 300px;
+                width: 320px;
+                height: 320px;
+            }
+            .pointer {
+                top: -30px;
+                border-left-width: 16px;
+                border-right-width: 16px;
+                border-top-width: 50px;
             }
             .options-panel {
                 width: 100%;
@@ -276,13 +283,13 @@
         }
         @media (max-width: 480px) {
             .wheel-container {
-                width: 260px;
-                height: 260px;
+                width: 280px;
+                height: 280px;
             }
             .pointer {
-                border-left-width: 12px;
-                border-right-width: 12px;
-                border-top-width: 40px;
+                border-left-width: 14px;
+                border-right-width: 14px;
+                border-top-width: 45px;
                 top: -25px;
             }
             #spinButton {
@@ -308,7 +315,7 @@
                 <div class="wheel-container">
                     <div class="pointer"></div>
                     <div id="wheel">
-                        <!-- 扇形将由JavaScript动态生成 -->
+                        <!-- 扇形分隔线将由JavaScript动态生成 -->
                     </div>
                 </div>
                 <div class="controls">
@@ -369,41 +376,61 @@
 
         // ==================== 核心功能 ====================
         let isSpinning = false;
+        let sectorColors = [];
 
-        // 1. 生成高区分度的颜色 (使用HSL模型，在色环上等间距)
+        // 1. 生成高区分度的颜色 (使用HSL模型，确保颜色鲜明且区分度高)
         function generateDistinctColors(count) {
             const colors = [];
+            const hueStep = 360 / count;
+            
             for (let i = 0; i < count; i++) {
-                // 色相均匀分布，饱和度和亮度固定为鲜艳值
-                const hue = Math.round((i * 360) / count); // 等间距色相
-                const saturation = 70 + Math.random() * 25; // 70-95%
-                const lightness = 50 + Math.random() * 15;  // 50-65%
+                // 等间距色相，确保最大区分度
+                const hue = Math.round(i * hueStep);
+                // 饱和度和亮度固定范围，确保颜色鲜艳且不过于刺眼
+                const saturation = 65 + Math.random() * 25; // 65-90%
+                const lightness = 45 + Math.random() * 20;  // 45-65%
                 colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
             }
-            // 轻微打乱顺序，避免相近色相相邻
-            return colors.sort(() => Math.random() - 0.5);
+            return colors;
         }
 
-        // 2. 创建轮盘扇区
-        function createWheelSectors() {
+        // 2. 创建轮盘 (使用conic-gradient实现完美等分)
+        function createWheel() {
             const wheel = document.getElementById('wheel');
-            wheel.innerHTML = '';
-            const sectorColors = generateDistinctColors(FOOD_OPTIONS.length);
-            const angleStep = 360 / FOOD_OPTIONS.length;
+            const totalOptions = FOOD_OPTIONS.length;
+            const angleStep = 360 / totalOptions;
             
-            // 为每个选项创建扇区
+            // 生成颜色
+            sectorColors = generateDistinctColors(totalOptions);
+            
+            // 构建conic-gradient字符串
+            let gradientString = 'conic-gradient(';
+            for (let i = 0; i < totalOptions; i++) {
+                const startAngle = i * angleStep;
+                const endAngle = (i + 1) * angleStep;
+                gradientString += `${sectorColors[i]} ${startAngle}deg ${endAngle}deg`;
+                if (i < totalOptions - 1) gradientString += ', ';
+            }
+            gradientString += ')';
+            
+            // 应用渐变背景
+            wheel.style.background = gradientString;
+            
+            // 创建分隔线
+            for (let i = 0; i < totalOptions; i++) {
+                const divider = document.createElement('div');
+                divider.className = 'sector-divider';
+                divider.style.transform = `rotate(${i * angleStep}deg)`;
+                wheel.appendChild(divider);
+            }
+            
+            // 将颜色保存到选项对象中
             FOOD_OPTIONS.forEach((option, index) => {
-                const sector = document.createElement('div');
-                sector.className = 'sector';
-                sector.style.backgroundColor = sectorColors[index];
-                sector.style.transform = `rotate(${index * angleStep}deg)`;
-                wheel.appendChild(sector);
-                
-                // 存储颜色到选项对象中
                 option.color = sectorColors[index];
             });
             
-            console.log('扇区颜色已生成:', sectorColors);
+            console.log('轮盘创建完成，颜色分布:', sectorColors);
+            console.log('每个扇形角度:', angleStep, '度');
         }
 
         // 3. 创建选项列表
@@ -423,7 +450,7 @@
             });
         }
 
-        // 4. 旋转轮盘 (修复了重复旋转问题)
+        // 4. 旋转轮盘 (关键：确保每次旋转效果一致)
         function spinWheel() {
             if (isSpinning) return;
             
@@ -432,31 +459,40 @@
             const spinBtn = document.getElementById('spinButton');
             const resultText = document.getElementById('resultText');
             
-            // 禁用按钮并更新状态
+            // 更新UI状态
             spinBtn.disabled = true;
             spinBtn.innerHTML = '<span>旋转中...</span><span>🌀</span>';
             resultText.innerHTML = '<span style="color:#666;">轮盘转动中...</span>';
             
-            // 随机选择目标
-            const randomIndex = Math.floor(Math.random() * FOOD_OPTIONS.length);
-            const selectedOption = FOOD_OPTIONS[randomIndex];
+            // 随机选择目标扇形
+            const totalOptions = FOOD_OPTIONS.length;
+            const selectedIndex = Math.floor(Math.random() * totalOptions);
+            const selectedOption = FOOD_OPTIONS[selectedIndex];
             
-            // 关键修复：计算旋转角度
-            // 1. 总是从当前视觉角度开始（读取transform值）
-            const currentRotation = getCurrentRotation(wheel);
-            // 2. 至少转4整圈 (1440度)
-            const fullCircles = 1440;
-            // 3. 加上随机偏移，确保停在目标扇区中间
-            const anglePerSector = 360 / FOOD_OPTIONS.length;
-            const targetOffset = randomIndex * anglePerSector + (anglePerSector / 2);
-            // 4. 总旋转角度
-            const totalRotation = currentRotation + fullCircles + (360 - targetOffset);
+            // 计算每个扇形的角度
+            const anglePerSector = 360 / totalOptions;
             
-            console.log(`选中: ${selectedOption.name}, 旋转至: ${totalRotation}度`);
+            // **关键算法：计算最终停止位置**
+            // 1. 每次旋转都从0度开始（重置旋转，保证一致性）
+            wheel.style.transition = 'none';
+            wheel.style.transform = 'rotate(0deg)';
             
-            // 应用旋转
+            // 2. 计算目标扇形的中心角度（确保指针停在扇形中心）
+            const targetCenterAngle = selectedIndex * anglePerSector + anglePerSector / 2;
+            
+            // 3. 计算最终旋转角度：完整4圈 + (360 - 目标角度)
+            // 这样确保指针每次都能精确停在扇形中心
+            const fullCircles = 1440; // 4整圈
+            const finalAngle = fullCircles + (360 - targetCenterAngle);
+            
+            // 强制重绘，确保重置生效
+            void wheel.offsetWidth;
+            
+            console.log(`第${selectedIndex + 1}个扇形 "${selectedOption.name}"，中心角度: ${targetCenterAngle}°，最终旋转: ${finalAngle}°`);
+            
+            // 应用旋转动画（每次都是3秒，相同的缓动函数）
             wheel.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.3, 1)';
-            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
             
             // 3秒后显示结果
             setTimeout(() => {
@@ -468,6 +504,7 @@
                     displayEmoji = '👧';
                 }
                 
+                // 显示结果，颜色与扇形颜色完全匹配
                 resultText.innerHTML = `
                     <div class="result-chip" style="background-color: ${selectedOption.color};">
                         <span>${displayEmoji}</span>
@@ -479,25 +516,15 @@
                 isSpinning = false;
                 spinBtn.disabled = false;
                 spinBtn.innerHTML = '<span>开始旋转</span><span>🎯</span>';
+                
+                console.log(`旋转完成，最终选择: ${selectedOption.name}，颜色: ${selectedOption.color}`);
             }, 3000);
-        }
-
-        // 辅助函数：获取当前旋转角度
-        function getCurrentRotation(element) {
-            const transform = window.getComputedStyle(element).transform;
-            if (transform === 'none') return 0;
-            
-            const values = transform.split('(')[1].split(')')[0].split(',');
-            const a = parseFloat(values[0]);
-            const b = parseFloat(values[1]);
-            const angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
-            return angle < 0 ? angle + 360 : angle;
         }
 
         // ==================== 初始化与事件绑定 ====================
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化轮盘和选项
-            createWheelSectors();
+            createWheel();
             createOptionsList();
             
             // 绑定旋转按钮事件
@@ -520,7 +547,7 @@
                 if (!isSpinning) spinWheel();
             });
             
-            console.log('美食轮盘初始化完成！');
+            console.log('美食轮盘初始化完成！共' + FOOD_OPTIONS.length + '个选项');
         });
     </script>
 </body>
